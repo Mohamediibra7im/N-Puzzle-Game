@@ -19,11 +19,7 @@ The **N-Puzzle Game** is a classic sliding puzzle game where the objective is to
 2. Navigate to the project directory:
     ```bash
     cd N-Puzzle-Game
-    ```
-3. Install dependencies (if applicable):
-    ```bash
-    npm install
-    ```
+
 
 ## Usage
 
