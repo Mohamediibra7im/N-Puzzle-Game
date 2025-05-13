@@ -100,10 +100,10 @@ Tests cover:
 - The search algorithm has a default node limit of 100,000 to prevent excessive resource usage
 - Larger puzzle sizes (4x4, 5x5) may require more time/memory to solve
 - Different heuristics have varying performance characteristics:
-  - Manhattan Distance is generally fast and effective
-  - Linear Conflict can find better solutions but is more computationally expensive
-  - Nilsson's Sequence is specialized for 3x3 puzzles
-  - Misplaced Tiles is simple but less effective for larger puzzles
+  - Manhattan Distance is generally fast and effective.
+  - Linear Conflict can find better solutions but is more computationally expensive.
+  - Nilsson's Sequence is specialized for 3x3 puzzles.
+  - Misplaced Tiles is simple but less effective for larger puzzles.
 
 ## Collebrators and Team Members
 
