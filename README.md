@@ -130,6 +130,7 @@ This feature visualizes the Best-First Search algorithm's progress by plotting t
 - **Purpose**: Helps understand how quickly the algorithm explores states and the heuristic's impact.
 
 #### How to Use
+
 1. Run `main.py` to start the GUI.
    ```bash
    python main.py
