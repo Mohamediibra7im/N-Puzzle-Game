@@ -105,14 +105,6 @@ Tests cover:
   - Nilsson's Sequence is specialized for 3x3 puzzles.
   - Misplaced Tiles is simple but less effective for larger puzzles.
 
-## Collebrators and Team Members
-
-1. **Mohammed Ibrahim**
-2. **Sarah Sayed**
-3. **Mahmoud Gamal**
-4. **Doha Mostafa**
-5. **Yehia Khalid**
-
 ## Diagrams
 
 #### 1. Block Diagram
@@ -152,3 +144,11 @@ This feature visualizes the Best-First Search algorithm's progress by plotting t
 The plot shows a line graph of nodes explored vs. iterations, varying by puzzle and heuristic.
 
 ![Example](./nodes_explored.png)
+
+## Collebrators and Team Members
+
+1. **Mohammed Ibrahim**
+2. **Sarah Sayed**
+3. **Mahmoud Gamal**
+4. **Doha Mostafa**
+5. **Yehia Khalid**
