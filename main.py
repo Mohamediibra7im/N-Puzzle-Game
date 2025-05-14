@@ -181,7 +181,7 @@ class NPuzzleGame(QMainWindow):
         plt.legend()
 
         # Save the plot to a file
-        plt.savefig("nodes_explored.png")
+        plt.savefig("./Diagrams/nodes_explored.png")
         plt.close()
 
         self.status_label.setText("Plot generated as 'nodes_explored.png'!")
