@@ -1,6 +1,5 @@
 from puzzle import PuzzleState
 
-
 def misplaced_tiles(state: PuzzleState) -> int:
     """Count number of tiles not in their goal position (excluding blank)"""
     count = 0
@@ -8,7 +7,6 @@ def misplaced_tiles(state: PuzzleState) -> int:
         if tile != 0 and tile != i + 1:
             count += 1
     return count
-
 
 def manhattan_distance(state: PuzzleState) -> int:
     """Sum of Manhattan distances between each tile and its goal position"""
@@ -21,7 +19,6 @@ def manhattan_distance(state: PuzzleState) -> int:
         current_row, current_col = divmod(i, size)
         total += abs(goal_row - current_row) + abs(goal_col - current_col)
     return total
-
 
 def linear_conflict(state: PuzzleState) -> int:
     """Manhattan distance plus linear conflict penalty"""
@@ -67,7 +64,6 @@ def linear_conflict(state: PuzzleState) -> int:
 
     return manhattan + conflicts
 
-
 def nilssons_sequence(state: PuzzleState) -> int:
     """Correct implementation of Nilsson's sequence score heuristic"""
     size = state.size
@@ -87,22 +83,28 @@ def nilssons_sequence(state: PuzzleState) -> int:
     perimeter_positions = [0, 1, 2, 5, 8, 7, 6, 3]
     perimeter_values = [state.tiles[pos] for pos in perimeter_positions]
 
-    # The correct sequence in the goal state is [1,2,3,6,9,8,7,4]
-    # We need to check how many times this sequence is broken
+    # The correct sequence in the goal state is [1, 2, 3, 6, 9, 8, 7, 4]
+    goal_sequence = [1, 2, 3, 6, 9, 8, 7, 4]
+    # Create a mapping of values to their indices in the goal sequence
+    value_to_goal_index = {val: idx for idx, val in enumerate(goal_sequence) if val != 0}
 
-    # Skip blank tiles in the sequence
-    filtered_values = [val for val in perimeter_values if val != 0]
+    # Filter out the blank tile (0) and get valid value-position pairs
+    valid_pairs = [(val, idx) for idx, val in enumerate(perimeter_values) if val != 0]
+    if len(valid_pairs) < 2:  # Not enough values to check sequence
+        return manhattan + 3 * sequence_score
 
-    # Check consecutive pairs
-    for i in range(len(filtered_values)):
-        current = filtered_values[i]
-        next_val = filtered_values[(i + 1) % len(filtered_values)]
+    # Check for sequence breaks by comparing with the goal sequence order
+    for i in range(len(valid_pairs)):
+        current_val, current_pos = valid_pairs[i]
+        next_idx = (i + 1) % len(valid_pairs)
+        next_val, _ = valid_pairs[next_idx]
 
-        # Special case: after 9 should come 8
-        if current == 9 and next_val != 8:
-            sequence_score += 2
-        # Regular case: current + 1 should equal next
-        elif current != 9 and next_val != current + 1:
-            sequence_score += 2
+        current_goal_idx = value_to_goal_index.get(current_val, -1)
+        next_goal_idx = value_to_goal_index.get(next_val, -1)
+
+        if current_goal_idx != -1 and next_goal_idx != -1:
+            expected_next_idx = (current_goal_idx + 1) % 8
+            if next_goal_idx != expected_next_idx and next_val != 0:
+                sequence_score += 2
 
     return manhattan + 3 * sequence_score

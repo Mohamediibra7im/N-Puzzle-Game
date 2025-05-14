@@ -86,13 +86,40 @@ class PuzzleState:
     def is_goal(self) -> bool:
         return self.tiles == list(range(1, self.n)) + [0]
 
+    def is_solvable(self) -> bool:
+        """Check if the puzzle is solvable by calculating inversions and blank position."""
+        inversions = 0
+        tiles = [tile for tile in self.tiles if tile != 0]  # Ignore blank tile
+        for i in range(len(tiles)):
+            for j in range(i + 1, len(tiles)):
+                if tiles[i] > tiles[j]:
+                    inversions += 1
+
+        blank_row_from_bottom = self.size - (self.blank_pos // self.size)
+
+        if self.size % 2 == 1:  # Odd size (e.g., 3x3)
+            return inversions % 2 == 0
+        else:  # Even size (e.g., 4x4)
+            return (inversions + blank_row_from_bottom) % 2 == 0
+
     def shuffle(self, moves: int = 100) -> "PuzzleState":
         current = self.copy()
-        for _ in range(moves):
-            valid_moves = current.get_valid_moves()
-            move = random.choice(valid_moves)
-            current = current.move(move)
-        return current
+        attempts = 0
+        max_attempts = 1000  # Avoid infinite loops
+
+        while attempts < max_attempts:
+            current = self.copy()
+            for _ in range(moves):
+                valid_moves = current.get_valid_moves()
+                move = random.choice(valid_moves)
+                current = current.move(move)
+            if current.is_solvable():
+                return current
+            attempts += 1
+
+        raise RuntimeError(
+            "Failed to generate a solvable puzzle after maximum attempts."
+        )
 
     def get_path(self) -> List["PuzzleState"]:
         path = []

@@ -1,5 +1,5 @@
 import heapq
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, List
 from puzzle import PuzzleState
 
 
@@ -19,10 +19,9 @@ def best_first_search(
     Returns:
         Tuple containing:
         - The goal state (with path information) if found, None otherwise
-        - Dictionary with search statistics
+        - Dictionary with search statistics including nodes_explored_at_steps
     """
     # Priority queue: (heuristic value, node count, state)
-    # Using node count as tie-breaker to ensure we don't compare states directly
     priority_queue = []
     node_count = 0
     heapq.heappush(
@@ -35,6 +34,7 @@ def best_first_search(
         "nodes_expanded": 0,
         "max_queue_size": 1,
         "start_heuristic": heuristic_fn(initial_state),
+        "nodes_explored_at_steps": [0],  # List to track cumulative nodes explored
     }
 
     while priority_queue:
@@ -45,6 +45,7 @@ def best_first_search(
         # Get next state to explore
         _, _, current = heapq.heappop(priority_queue)
         stats["nodes_expanded"] += 1
+        stats["nodes_explored_at_steps"].append(stats["nodes_expanded"])
 
         # Check if we've reached the goal
         if current.is_goal():

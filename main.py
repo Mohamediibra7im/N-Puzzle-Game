@@ -1,5 +1,6 @@
 import sys
 import time
+import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -16,17 +17,19 @@ from puzzle import PuzzleState
 from search import best_first_search
 from heuristics import *
 
+
 class NPuzzleGame(QMainWindow):
     def __init__(self):
         super().__init__()
         self.size = 3  # Default puzzle size
         self.heuristic_fn = manhattan_distance  # Default heuristic
         self.max_nodes = 100000  # Default max nodes
+        self.search_stats = {"nodes_expanded": 0}  # Store search statistics
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle("N-Puzzle Game")
-        self.setGeometry(100, 100, 400, 400)
+        self.setGeometry(100, 100, 400, 500)
 
         # Main widget and layout
         self.central_widget = QWidget()
@@ -66,6 +69,11 @@ class NPuzzleGame(QMainWindow):
         self.solve_button.clicked.connect(self.solve_puzzle)
         self.layout.addWidget(self.solve_button)
 
+        # Plot button
+        self.plot_button = QPushButton("Generate Plot")
+        self.plot_button.clicked.connect(self.generate_plot)
+        self.layout.addWidget(self.plot_button)
+
         # Status label
         self.status_label = QLabel("Welcome to N-Puzzle!")
         self.layout.addWidget(self.status_label)
@@ -104,6 +112,7 @@ class NPuzzleGame(QMainWindow):
         solution, stats = best_first_search(
             self.current_state, self.heuristic_fn, self.max_nodes
         )
+        self.search_stats = stats  # Store the latest search statistics
         elapsed = time.time() - start_time
 
         if solution:
@@ -134,7 +143,7 @@ class NPuzzleGame(QMainWindow):
             self.heuristic_fn = misplaced_tiles
         elif selected_heuristic == "Linear Conflict":
             self.heuristic_fn = linear_conflict
-        elif selected_heuristic == "nilssons_sequence":
+        elif selected_heuristic == "Nilssons Sequence":
             self.heuristic_fn = nilssons_sequence
 
     def update_size(self):
@@ -152,6 +161,31 @@ class NPuzzleGame(QMainWindow):
         self.current_state = self.goal_state
         self.update_grid()
         self.status_label.setText(f"Board size updated to {self.size}x{self.size}!")
+
+    def generate_plot(self):
+        """Generate a plot of nodes explored during the last search."""
+        if not self.search_stats or "nodes_explored_at_steps" not in self.search_stats:
+            self.status_label.setText("No search data available to plot!")
+            return
+
+        # Get the data from the search statistics
+        nodes_explored = self.search_stats["nodes_explored_at_steps"]
+        iterations = list(range(len(nodes_explored)))
+
+        plt.figure(figsize=(8, 6))
+        plt.plot(iterations, nodes_explored, "b-", label="Nodes Explored")
+        plt.title("Nodes Explored vs. Iterations")
+        plt.xlabel("Iterations")
+        plt.ylabel("Number of Nodes Explored")
+        plt.grid(True)
+        plt.legend()
+
+        # Save the plot to a file
+        plt.savefig("nodes_explored.png")
+        plt.close()
+
+        self.status_label.setText("Plot generated as 'nodes_explored.png'!")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
