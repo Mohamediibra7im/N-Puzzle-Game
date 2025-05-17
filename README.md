@@ -119,32 +119,6 @@ Tests cover:
 
 ![Class Diagram](./Diagrams/Class%20Diagram.png)
 
-### 4. Plot Diagram
-
-#### Overview
-This feature visualizes the Best-First Search algorithm's progress by plotting the number of nodes explored over iterations.
-
-#### What the Plot Shows
-- **X-Axis**: Iterations (each step of the search).
-- **Y-Axis**: Cumulative nodes explored.
-- **Purpose**: Helps understand how quickly the algorithm explores states and the heuristic's impact.
-
-#### How to Use
-
-1. Run `main.py` to start the GUI.
-   ```bash
-   python main.py
-   ```
-2. Select puzzle size and heuristic from the dropdowns.
-3. Click "Shuffle" to randomize the puzzle.
-4. Click "Solve" to find a solution.
-5. Click "Generate Plot" to create the plot, saved as `nodes_explored.png`.
-6. Open `nodes_explored.png` to view the plot.
-
-#### Example
-The plot shows a line graph of nodes explored vs. iterations, varying by puzzle and heuristic.
-
-![Example](./Diagrams/nodes_explored_comparison.png)
 
 ## Collebrators and Team Members
 
