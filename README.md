@@ -144,7 +144,7 @@ This feature visualizes the Best-First Search algorithm's progress by plotting t
 #### Example
 The plot shows a line graph of nodes explored vs. iterations, varying by puzzle and heuristic.
 
-![Example](./Diagrams/nodes_explored.png)
+![Example](./Diagrams/nodes_explored_comparison.png)
 
 ## Collebrators and Team Members
 
