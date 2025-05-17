@@ -20,6 +20,7 @@ class PuzzleState:
         self.parent = None
         self.move_from_parent = None
         self.depth = 0
+        self._path_cache = None  # Cache for get_path
 
     def __str__(self) -> str:
         return "\n".join(
@@ -87,12 +88,20 @@ class PuzzleState:
         return self.tiles == list(range(1, self.n)) + [0]
 
     def is_solvable(self) -> bool:
-        """Check if the puzzle is solvable by calculating inversions and blank position."""
+        """
+        Check if the puzzle is solvable by calculating inversions and blank position.
+
+        Returns:
+            True if the puzzle is solvable, False otherwise.
+        """
         inversions = 0
-        tiles = [tile for tile in self.tiles if tile != 0]  # Ignore blank tile
-        for i in range(len(tiles)):
-            for j in range(i + 1, len(tiles)):
-                if tiles[i] > tiles[j]:
+        for i in range(len(self.tiles)):
+            if self.tiles[i] == 0:
+                continue
+            for j in range(i + 1, len(self.tiles)):
+                if self.tiles[j] == 0:
+                    continue
+                if self.tiles[i] > self.tiles[j]:
                     inversions += 1
 
         blank_row_from_bottom = self.size - (self.blank_pos // self.size)
@@ -103,16 +112,19 @@ class PuzzleState:
             return (inversions + blank_row_from_bottom) % 2 == 0
 
     def shuffle(self, moves: int = 100) -> "PuzzleState":
+
         current = self.copy()
         attempts = 0
-        max_attempts = 1000  # Avoid infinite loops
+        max_attempts = 1000
 
         while attempts < max_attempts:
             current = self.copy()
             for _ in range(moves):
                 valid_moves = current.get_valid_moves()
                 move = random.choice(valid_moves)
-                current = current.move(move)
+                next_state = current.move(move)
+                if next_state:
+                    current = next_state
             if current.is_solvable():
                 return current
             attempts += 1
@@ -122,9 +134,14 @@ class PuzzleState:
         )
 
     def get_path(self) -> List["PuzzleState"]:
+
+        if self._path_cache is not None:
+            return self._path_cache
+
         path = []
         current = self
         while current is not None:
             path.append(current)
             current = current.parent
-        return path[::-1]
+        self._path_cache = path[::-1]
+        return self._path_cache
