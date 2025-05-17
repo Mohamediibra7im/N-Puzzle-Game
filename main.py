@@ -15,14 +15,23 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QTimer
 from puzzle import PuzzleState
 from search import best_first_search
-from heuristics import (manhattan_distance, misplaced_tiles, nilssons_sequence, linear_conflict)
+from heuristics import (
+    manhattan_distance,
+    misplaced_tiles,
+    nilssons_sequence,
+    linear_conflict,
+)
+
 
 class NPuzzleGame(QMainWindow):
     def __init__(self):
         super().__init__()
         self.size = 3
         self.heuristic_fn = manhattan_distance
-        self.max_nodes = (100000 if self.size == 3 else 1000000 if self.size == 4 else 5000000)
+        # Dynamic max_nodes based on puzzle size
+        self.max_nodes = (
+            100000 if self.size == 3 else 1000000 if self.size == 4 else 5000000
+        )
         self.search_stats = {}
         self.initUI()
 
@@ -69,6 +78,7 @@ class NPuzzleGame(QMainWindow):
         self.update_grid()
 
     def update_grid(self):
+        # Debug: Log state being rendered
         print("Updating GUI with state:", self.current_state.tiles)
         for i in reversed(range(self.grid_layout.count())):
             self.grid_layout.itemAt(i).widget().setParent(None)
@@ -87,13 +97,21 @@ class NPuzzleGame(QMainWindow):
         self.plot_button.setEnabled(False)
         QApplication.processEvents()
 
-        moves = self.size * self.size * 20
-        shuffled_state = self.goal_state.shuffle(moves)
-        self.current_state = shuffled_state.copy()
-        self.update_grid()
-        QApplication.processEvents()
-        self.status_label.setText("Puzzle shuffled!")
-        self.search_stats = {}
+        try:
+            moves = self.size * self.size * 20  # -> 20 times the number of tiles
+            shuffled_state = self.goal_state.shuffle(moves)
+            self.current_state = shuffled_state.copy()
+            self.update_grid()
+            QApplication.processEvents()
+            self.status_label.setText("Puzzle shuffled!")
+            self.search_stats = {}
+        except RuntimeError as e:
+            QMessageBox.warning(
+                self,
+                "Shuffle Error",
+                "Failed to generate a solvable puzzle. Please try again.",
+            )
+            self.status_label.setText("Failed to shuffle puzzle.")
 
         self.shuffle_button.setEnabled(True)
         self.solve_button.setEnabled(True)
@@ -132,6 +150,7 @@ class NPuzzleGame(QMainWindow):
             self.plot_button.setEnabled(True)
             return
 
+        # Warn about potential delay for larger puzzles
         heuristic_name = self.heuristic_dropdown.currentText()
         status_text = f"Solving with Best-First Search and {heuristic_name}"
         if self.size > 3:
@@ -301,14 +320,18 @@ class NPuzzleGame(QMainWindow):
                 nodes_explored,
                 label=f"{heuristic_name} (Time: {data['time']:.4f}s)",
             )
-        plt.title("Nodes Explored vs. Iterations for Each Heuristic (Best-First Search)")
+        plt.title(
+            "Nodes Explored vs. Iterations for Each Heuristic (Best-First Search)"
+        )
         plt.xlabel("Iterations")
         plt.ylabel("Number of Nodes Explored")
         plt.grid(True)
         plt.legend()
         plt.savefig("./Diagrams/nodes_explored_comparison.png")
         plt.close()
-        self.status_label.setText("Comparison plot generated as 'nodes_explored_comparison.png'!")
+        self.status_label.setText(
+            "Comparison plot generated as 'nodes_explored_comparison.png'!"
+        )
 
 
 if __name__ == "__main__":

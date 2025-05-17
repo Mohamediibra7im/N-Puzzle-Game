@@ -1,6 +1,7 @@
 import random
 from typing import List, Tuple, Optional
 
+
 class PuzzleState:
     def __init__(
         self,
@@ -14,12 +15,12 @@ class PuzzleState:
             self.tiles = tiles.copy()
             self.blank_pos = blank_pos if blank_pos is not None else self.tiles.index(0)
         else:
-            self.tiles = list(range(1, self.n)) + [0]
+            self.tiles = list(range(1, self.n)) + [0]  # Goal state
             self.blank_pos = self.n - 1
         self.parent = None
         self.move_from_parent = None
         self.depth = 0
-        self._path_cache = None
+        self._path_cache = None  # Cache for get_path
 
     def __str__(self) -> str:
         return "\n".join(
@@ -87,6 +88,12 @@ class PuzzleState:
         return self.tiles == list(range(1, self.n)) + [0]
 
     def is_solvable(self) -> bool:
+        """
+        Check if the puzzle is solvable by calculating inversions and blank position.
+
+        Returns:
+            True if the puzzle is solvable, False otherwise.
+        """
         inversions = 0
         for i in range(len(self.tiles)):
             if self.tiles[i] == 0:
@@ -99,31 +106,58 @@ class PuzzleState:
 
         blank_row_from_bottom = self.size - (self.blank_pos // self.size)
 
-        if self.size % 2 == 1:
+        if self.size % 2 == 1:  # Odd size (e.g., 3x3)
             return inversions % 2 == 0
-        else:
+        else:  # Even size (e.g., 4x4)
             return (inversions + blank_row_from_bottom) % 2 == 0
 
     def shuffle(self, moves: int = 100) -> "PuzzleState":
-        current = self.copy()
-        attempts = 0
-        max_attempts = 1000
+        import random
 
-        while attempts < max_attempts:
-            current = self.copy()
-            for _ in range(moves):
-                valid_moves = current.get_valid_moves()
-                move = random.choice(valid_moves)
-                next_state = current.move(move)
-                if next_state:
-                    current = next_state
-            if current.is_solvable():
-                return current
-            attempts += 1
+        # Generate a random permutation of tiles
+        tiles = list(range(1, self.n)) + [0]  # e.g., [1, 2, ..., 15, 0] for 4x4
+        random.shuffle(tiles)
 
-        raise RuntimeError(
-            "Failed to generate a solvable puzzle after maximum attempts."
-        )
+        # Check solvability and adjust
+        inversions = 0
+        for i in range(len(tiles)):
+            if tiles[i] == 0:
+                continue
+            for j in range(i + 1, len(tiles)):
+                if tiles[j] == 0:
+                    continue
+                if tiles[i] > tiles[j]:
+                    inversions += 1
+
+        blank_pos = tiles.index(0)
+        blank_row_from_bottom = self.size - (blank_pos // self.size)
+
+        # For 4x4 (even size), solvable if (inversions + blank_row_from_bottom) % 2 == 0
+        if self.size % 2 == 0:
+            if (inversions + blank_row_from_bottom) % 2 != 0:
+                # Make solvable by swapping two non-blank tiles
+                for i in range(len(tiles)):
+                    if tiles[i] != 0:
+                        for j in range(i + 1, len(tiles)):
+                            if tiles[j] != 0:
+                                tiles[i], tiles[j] = tiles[j], tiles[i]
+                                break
+                        break
+        else:
+            # For odd size (e.g., 3x3), solvable if inversions % 2 == 0
+            if inversions % 2 != 0:
+                # Swap two tiles to adjust inversions
+                for i in range(len(tiles)):
+                    if tiles[i] != 0:
+                        for j in range(i + 1, len(tiles)):
+                            if tiles[j] != 0:
+                                tiles[i], tiles[j] = tiles[j], tiles[i]
+                                break
+                        break
+
+        # Create new state with the solvable permutation
+        new_state = PuzzleState(self.size, tiles)
+        return new_state
 
     def get_path(self) -> List["PuzzleState"]:
         if self._path_cache is not None:

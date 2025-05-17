@@ -89,9 +89,7 @@ class TestSearch(unittest.TestCase):
 
     def test_unsolvable(self):
         unsolvable = PuzzleState(self.size, [1, 2, 3, 4, 5, 6, 8, 7, 0])
-        solution, stats = best_first_search(
-            unsolvable, manhattan_distance, max_nodes=1000
-        )
+        solution, stats = best_first_search(unsolvable, manhattan_distance, max_nodes=1000)
         self.assertIsNone(solution)
 
 
