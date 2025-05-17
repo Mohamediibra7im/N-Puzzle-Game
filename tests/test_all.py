@@ -68,6 +68,7 @@ class TestHeuristics(unittest.TestCase):
         manhattan = manhattan_distance(conflict_state)
         self.assertEqual(linear_conflict(conflict_state), manhattan + 2)
 
+
 class TestSearch(unittest.TestCase):
     def setUp(self):
         self.size = 3

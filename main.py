@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QComboBox,
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from puzzle import PuzzleState
 from search import best_first_search
 from heuristics import (
@@ -28,7 +28,7 @@ class NPuzzleGame(QMainWindow):
         super().__init__()
         self.size = 3
         self.heuristic_fn = manhattan_distance
-        self.max_nodes = 100000
+        self.max_nodes = (100000 if self.size == 3 else 1000000 if self.size == 4 else 5000000)
         self.search_stats = {}
         self.initUI()
 
@@ -75,6 +75,7 @@ class NPuzzleGame(QMainWindow):
         self.update_grid()
 
     def update_grid(self):
+        print("Updating GUI with state:", self.current_state.tiles)
         for i in reversed(range(self.grid_layout.count())):
             self.grid_layout.itemAt(i).widget().setParent(None)
         for i in range(self.size):
@@ -86,25 +87,65 @@ class NPuzzleGame(QMainWindow):
                 self.grid_layout.addWidget(button, i, j)
 
     def shuffle_puzzle(self):
-        moves = self.size * self.size * 10
-        self.current_state = self.goal_state.shuffle(moves)
+        self.shuffle_button.setEnabled(False)
+        self.solve_button.setEnabled(False)
+        self.compare_button.setEnabled(False)
+        self.plot_button.setEnabled(False)
+        QApplication.processEvents()
+
+        moves = self.size * self.size * 20
+        shuffled_state = self.goal_state.shuffle(moves)
+        self.current_state = shuffled_state.copy()
         self.update_grid()
+        QApplication.processEvents()
         self.status_label.setText("Puzzle shuffled!")
         self.search_stats = {}
 
+        self.shuffle_button.setEnabled(True)
+        self.solve_button.setEnabled(True)
+        self.compare_button.setEnabled(True)
+        self.plot_button.setEnabled(True)
+
     def solve_puzzle(self):
+        self.shuffle_button.setEnabled(False)
+        self.solve_button.setEnabled(False)
+        self.compare_button.setEnabled(False)
+        self.plot_button.setEnabled(False)
+        QApplication.processEvents()
+
+        self.update_grid()
+        QApplication.processEvents()
+
+        if self.current_state.is_goal():
+            QMessageBox.warning(
+                self, "Invalid State", "Puzzle is already solved! Please shuffle first."
+            )
+            self.status_label.setText("Puzzle is already solved!")
+            self.shuffle_button.setEnabled(True)
+            self.solve_button.setEnabled(True)
+            self.compare_button.setEnabled(True)
+            self.plot_button.setEnabled(True)
+            return
+
         if not self.current_state.is_solvable():
             QMessageBox.warning(
                 self, "Unsolvable Puzzle", "The current puzzle is unsolvable."
             )
             self.status_label.setText("Unsolvable puzzle!")
+            self.shuffle_button.setEnabled(True)
+            self.solve_button.setEnabled(True)
+            self.compare_button.setEnabled(True)
+            self.plot_button.setEnabled(True)
             return
 
         heuristic_name = self.heuristic_dropdown.currentText()
-        self.status_label.setText(
-            f"Solving with Best-First Search and {heuristic_name}..."
-        )
+        status_text = f"Solving with Best-First Search and {heuristic_name}"
+        if self.size > 3:
+            status_text += " (this may take a while for larger puzzles)..."
+        self.status_label.setText(status_text)
         QApplication.processEvents()
+
+        print("Solving from state:", self.current_state.tiles)
         start_time = time.perf_counter()
         solution, stats = best_first_search(
             self.current_state, self.heuristic_fn, self.max_nodes
@@ -118,26 +159,56 @@ class NPuzzleGame(QMainWindow):
         print(f"{heuristic_name}: {elapsed:.6f} seconds")
 
         if solution:
-            self.status_label.setText("Solution found! Visualizing...")
-            self.show_solution_path(solution)
+            print("Solution depth:", solution.depth)
+            QTimer.singleShot(100, lambda: self.show_solution_path(solution))
         else:
             self.status_label.setText("No solution found within node limit.")
+            self.shuffle_button.setEnabled(True)
+            self.solve_button.setEnabled(True)
+            self.compare_button.setEnabled(True)
+            self.plot_button.setEnabled(True)
 
     def show_solution_path(self, solution):
-        path = solution.get_path()
-        for state in path:
-            self.current_state = state
-            self.update_grid()
-            QApplication.processEvents()
-            time.sleep(0.5)
-        self.status_label.setText("Solution path completed!")
+        self.path = solution.get_path()
+        print(
+            "Solution path first state:", self.path[0].tiles if self.path else "Empty"
+        )
+        if self.path and self.path[0].tiles != self.current_state.tiles:
+            print("Warning: Path start does not match current state!")
+        self.path_index = 0
+
+        def display_next_state():
+            if self.path_index < len(self.path):
+                self.current_state = self.path[self.path_index]
+                self.update_grid()
+                QApplication.processEvents()
+                self.path_index += 1
+                QTimer.singleShot(500, display_next_state)
+            else:
+                self.status_label.setText("Solution path completed!")
+                self.shuffle_button.setEnabled(True)
+                self.solve_button.setEnabled(True)
+                self.compare_button.setEnabled(True)
+                self.plot_button.setEnabled(True)
+
+        QTimer.singleShot(0, display_next_state)
 
     def compare_heuristics(self):
+        self.shuffle_button.setEnabled(False)
+        self.solve_button.setEnabled(False)
+        self.compare_button.setEnabled(False)
+        self.plot_button.setEnabled(False)
+        QApplication.processEvents()
+
         if not self.current_state.is_solvable():
             QMessageBox.warning(
                 self, "Unsolvable Puzzle", "The current puzzle is unsolvable."
             )
             self.status_label.setText("Unsolvable puzzle!")
+            self.shuffle_button.setEnabled(True)
+            self.solve_button.setEnabled(True)
+            self.compare_button.setEnabled(True)
+            self.plot_button.setEnabled(True)
             return
 
         self.status_label.setText("Comparing all heuristics with Best-First Search...")
@@ -185,6 +256,10 @@ class NPuzzleGame(QMainWindow):
                 )
         QMessageBox.information(self, "Heuristic Comparison", results_text)
         self.status_label.setText("Comparison results displayed.")
+        self.shuffle_button.setEnabled(True)
+        self.solve_button.setEnabled(True)
+        self.compare_button.setEnabled(True)
+        self.plot_button.setEnabled(True)
 
     def update_heuristic(self):
         selected_heuristic = self.heuristic_dropdown.currentText()
@@ -202,10 +277,13 @@ class NPuzzleGame(QMainWindow):
         selected_size = self.size_dropdown.currentText()
         if selected_size == "3x3":
             self.size = 3
+            self.max_nodes = 100000
         elif selected_size == "4x4":
             self.size = 4
+            self.max_nodes = 1000000
         elif selected_size == "5x5":
             self.size = 5
+            self.max_nodes = 5000000
         self.goal_state = PuzzleState(self.size)
         self.current_state = self.goal_state
         self.update_grid()

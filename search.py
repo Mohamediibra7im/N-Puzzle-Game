@@ -2,25 +2,13 @@ import heapq
 from typing import Callable, Optional, Tuple
 from puzzle import PuzzleState
 
+
 def best_first_search(
     initial_state: PuzzleState,
     heuristic_fn: Callable[[PuzzleState], int],
     max_nodes: int = 100000,
 ) -> Tuple[Optional[PuzzleState], dict]:
-    """
-    Implement Best-First Search using only the heuristic function h(n).
 
-    Args:
-        initial_state: Starting puzzle state.
-        heuristic_fn: Heuristic function to estimate cost to goal.
-        max_nodes: Maximum number of nodes to explore before giving up.
-
-    Returns:
-        Tuple containing:
-        - The goal state (with path information) if found, None otherwise.
-        - Dictionary with search statistics including nodes_explored_at_steps.
-    """
-    # Priority queue: (h(n), node count, state)
     priority_queue = []
     node_count = 0
     h = heuristic_fn(initial_state)

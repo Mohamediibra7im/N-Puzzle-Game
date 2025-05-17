@@ -1,7 +1,6 @@
 import random
 from typing import List, Tuple, Optional
 
-
 class PuzzleState:
     def __init__(
         self,
@@ -15,12 +14,12 @@ class PuzzleState:
             self.tiles = tiles.copy()
             self.blank_pos = blank_pos if blank_pos is not None else self.tiles.index(0)
         else:
-            self.tiles = list(range(1, self.n)) + [0]  # Goal state
+            self.tiles = list(range(1, self.n)) + [0]
             self.blank_pos = self.n - 1
         self.parent = None
         self.move_from_parent = None
         self.depth = 0
-        self._path_cache = None  # Cache for get_path
+        self._path_cache = None
 
     def __str__(self) -> str:
         return "\n".join(
@@ -88,12 +87,6 @@ class PuzzleState:
         return self.tiles == list(range(1, self.n)) + [0]
 
     def is_solvable(self) -> bool:
-        """
-        Check if the puzzle is solvable by calculating inversions and blank position.
-
-        Returns:
-            True if the puzzle is solvable, False otherwise.
-        """
         inversions = 0
         for i in range(len(self.tiles)):
             if self.tiles[i] == 0:
@@ -106,13 +99,12 @@ class PuzzleState:
 
         blank_row_from_bottom = self.size - (self.blank_pos // self.size)
 
-        if self.size % 2 == 1:  # Odd size (e.g., 3x3)
+        if self.size % 2 == 1:
             return inversions % 2 == 0
-        else:  # Even size (e.g., 4x4)
+        else:
             return (inversions + blank_row_from_bottom) % 2 == 0
 
     def shuffle(self, moves: int = 100) -> "PuzzleState":
-
         current = self.copy()
         attempts = 0
         max_attempts = 1000
@@ -134,7 +126,6 @@ class PuzzleState:
         )
 
     def get_path(self) -> List["PuzzleState"]:
-
         if self._path_cache is not None:
             return self._path_cache
 

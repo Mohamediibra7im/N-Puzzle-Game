@@ -1,11 +1,13 @@
 from puzzle import PuzzleState
 
+
 def misplaced_tiles(state: PuzzleState) -> int:
     count = 0
     for i, tile in enumerate(state.tiles):
         if tile != 0 and tile != i + 1:
             count += 1
     return count
+
 
 def manhattan_distance(state: PuzzleState) -> int:
     total = 0
@@ -17,6 +19,7 @@ def manhattan_distance(state: PuzzleState) -> int:
         current_row, current_col = divmod(i, size)
         total += abs(goal_row - current_row) + abs(goal_col - current_col)
     return total
+
 
 def linear_conflict(state: PuzzleState) -> int:
     size = state.size
@@ -57,6 +60,7 @@ def linear_conflict(state: PuzzleState) -> int:
                 ):
                     conflicts += 2
     return manhattan + conflicts
+
 
 def nilssons_sequence(state: PuzzleState) -> int:
     size = state.size
