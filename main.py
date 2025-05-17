@@ -15,13 +15,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QTimer
 from puzzle import PuzzleState
 from search import best_first_search
-from heuristics import (
-    manhattan_distance,
-    misplaced_tiles,
-    nilssons_sequence,
-    linear_conflict,
-)
-
+from heuristics import (manhattan_distance, misplaced_tiles, nilssons_sequence, linear_conflict)
 
 class NPuzzleGame(QMainWindow):
     def __init__(self):
@@ -307,18 +301,14 @@ class NPuzzleGame(QMainWindow):
                 nodes_explored,
                 label=f"{heuristic_name} (Time: {data['time']:.4f}s)",
             )
-        plt.title(
-            "Nodes Explored vs. Iterations for Each Heuristic (Best-First Search)"
-        )
+        plt.title("Nodes Explored vs. Iterations for Each Heuristic (Best-First Search)")
         plt.xlabel("Iterations")
         plt.ylabel("Number of Nodes Explored")
         plt.grid(True)
         plt.legend()
         plt.savefig("./Diagrams/nodes_explored_comparison.png")
         plt.close()
-        self.status_label.setText(
-            "Comparison plot generated as 'nodes_explored_comparison.png'!"
-        )
+        self.status_label.setText("Comparison plot generated as 'nodes_explored_comparison.png'!")
 
 
 if __name__ == "__main__":
